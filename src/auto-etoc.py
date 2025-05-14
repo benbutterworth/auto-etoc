@@ -22,10 +22,13 @@ def clean_author_text(author):
         return(author.strip("0123456789, "))
 
 # Scrape HTML webpage from springerlink here
-def get_website_soup(url):
+def get_website_soup(url, give_main=True):
     check_url(url)
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
+    if give_main:
+        main = soup.find(id="main")
+        return main
     return soup
 
   
@@ -46,12 +49,15 @@ def extract_article_info(soup):
     # Note if "on behalf of" or other exceptions
     # add "&" symbol between last two
     data["authors"] = ", ".join(authors_names)
+    data["link"] = ""
     return data
     
 
 # Print out article information in ETOC format
 def print_etoc_entry(article_info):
     print("\n")
+    if article_info["link"]:
+        print(article_info["link"])
     print(article_info["title"])
     print(article_info["authors"])
     if article_info["type"]!="Article":
@@ -62,12 +68,30 @@ def print_etoc_entry(article_info):
     print("\n")
     return 0
 
+def get_article_links_from_journal_issue(soup):
+    links = []
+    articles_list = soup.find_all("h3", class_="app-card-open__heading")
+    for article in articles_list:
+        links.append(article.find_all("a")[0]["href"])
+    return links
+
+def generate_etoc(journal_issue_url):
+    soup = get_website_soup(journal_issue_url)
+    links = get_article_links_from_journal_issue(soup)
+    for url in links:
+        soup = get_website_soup(url)
+        article_info = extract_article_info(soup)
+        article_info["link"] = url
+        print_etoc_entry(article_info)
+    return 0
+
 if __name__=="__main__":
     while True:
         url = str(input("Input page URL here: "))
         if url == "":
             break
         soup = get_website_soup(url)
-        main = soup.find(id="main")
-        article_info = extract_article_info(main)
+        article_info = extract_article_info(soup)
         print_etoc_entry(article_info)
+    journal_issue_url = str(input("Input journal issue URL here: "))
+    generate_etoc(journal_issue_url)

@@ -70,21 +70,6 @@ def extract_article_info(soup):
     }
     return data
     
-# Print out article information in ETOC format
-def print_etoc_entry(article_info):
-    print("\n")
-    if article_info["link"]:
-        print(article_info["link"])
-    print(article_info["title"])
-    print(article_info["authors"])
-    if article_info["type"]!="Article":
-        article_type = "(" + article_info["type"] + ")"
-        print(article_type)
-    if article_info["open-access"]:
-        print("(Open Access)")
-    print("\n")
-    return 0
-
 def get_etoc_entry(article_info): #variant of print_etoc_entry
     article_type = f"\n({article_info["type"]})" if article_info["type"]!="Article" else ""
     entry = f"""
@@ -92,15 +77,6 @@ def get_etoc_entry(article_info): #variant of print_etoc_entry
 {article_info["title"]}
 {article_info["authors"]}{article_type}
 {"(Open Access)" if article_info["open-access"] else ""}"""
-    # entry = ""
-    # if article_info["link"]:
-    #     entry += article_info["link"] + "\n"
-    # entry += article_info["title"] + "\n"
-    # entry += article_info["authors"] + "\n"
-    # if article_info["type"]!="Article":
-    #     entry += f"({article_info["type"]})\n"
-    # if article_info["open-access"]:
-    #     entry += "(Open Access)\n"
     return entry
 
 def get_article_links_from_journal_issue(soup):
@@ -114,13 +90,15 @@ def generate_etoc(journal_issue_url):
     check_url(journal_issue_url, target="issue")
     soup = get_website_soup(journal_issue_url)
     links = get_article_links_from_journal_issue(soup)
+    etoc = ""
     for url in links:
         check_url(url)
         soup = get_website_soup(url)
         article_info = extract_article_info(soup)
         article_info["link"] = url
-        print(get_etoc_entry(article_info))
-    return 0
+        etoc += get_etoc_entry(article_info)
+    return etoc
+
 
 if __name__=="__main__":
     print(greeting)
@@ -134,5 +112,5 @@ if __name__=="__main__":
         print(get_etoc_entry(article_info))
     journal_issue_url = str(input("Input journal issue URL here: "))
     if journal_issue_url != "":
-        generate_etoc(journal_issue_url)
+        print(generate_etoc(journal_issue_url))
     print("\nBye for now!")

@@ -19,7 +19,7 @@ Clone this repository into your preferred folder.
 3. Press "generate etoc" and wait.
 
 # The future
-0. Fix parsing of author names to account for organisational affiliations.
+0. (**DONE**) Fix parsing of author names to account for organisational affiliations.
 1. (**DONE**) Allow user to input journal issue and produce whole etoc, not just one entry.
 2. (**DONE**) Add simple tk GUI with textbox and button.
 3. Widen scope to other publishers than SpringerNature

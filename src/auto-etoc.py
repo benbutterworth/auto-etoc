@@ -1,18 +1,27 @@
 import requests
 from bs4 import BeautifulSoup
+import re
 
-print("""
+greeting = """
    _____     _           _____ _____ _____ _____
   |  _  |_ _| |_ ___ ___|   __|_   _|     |     |
   |     | | |  _| . |___|   __| | | |  |  |  ---|
   |__|__|___|_| |___|   |_____| |_| |_____|_____|   
   ----your friendly neighbourhood ETOC maker----
 
-""")
+"""
 
-def check_url(url):
-    # add error check that URL is springerlink and an articlehere
-    # if url doesn't have https://link.springer.com/article then throw error
+def check_url(url, target="article"):
+    # Define the appropriate url format for each type of site to scrape
+    if target == "article":
+        regex = r"link\.springer\.com\/article\/10\.1007"
+    elif target == "issue":
+        regex = r"link\.springer.com\/journal\/125\/volumes-and-issues"
+    else:
+        raise TypeError("Invalid target - please specify what the source should be")
+    # Check that url matches these formats
+    if not re.search(regex, url):
+        raise ValueError("URL does not point to valid source of etoc information.")
     pass
 
 def clean_author_text(author):
@@ -23,7 +32,6 @@ def clean_author_text(author):
 
 # Scrape HTML webpage from springerlink here
 def get_website_soup(url, give_main=True):
-    check_url(url)
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
     if give_main:
@@ -76,9 +84,11 @@ def get_article_links_from_journal_issue(soup):
     return links
 
 def generate_etoc(journal_issue_url):
+    check_url(journal_issue_url, target="issue")
     soup = get_website_soup(journal_issue_url)
     links = get_article_links_from_journal_issue(soup)
     for url in links:
+        check_url(url)
         soup = get_website_soup(url)
         article_info = extract_article_info(soup)
         article_info["link"] = url
@@ -86,10 +96,12 @@ def generate_etoc(journal_issue_url):
     return 0
 
 if __name__=="__main__":
+    print(greeting)
     while True:
         url = str(input("Input page URL here: "))
         if url == "":
             break
+        check_url(url)
         soup = get_website_soup(url)
         article_info = extract_article_info(soup)
         print_etoc_entry(article_info)

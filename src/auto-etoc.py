@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-import re
+import re #proREGEXgang
 
 greeting = """
    _____     _           _____ _____ _____ _____
@@ -11,6 +11,7 @@ greeting = """
 
 """
 
+# Throw errors if the URL isn't for SpringerLink sites and hence won't work
 def check_url(url, target="article"):
     # Define the appropriate url format for each type of site to scrape
     if target == "article":
@@ -24,6 +25,7 @@ def check_url(url, target="article"):
         raise ValueError("URL does not point to valid source of etoc information.")
     pass
 
+# Remove all author affiliations etc. from an author line
 def clean_author_text(author):
     trailing_chars = "0123456789,&" + " "
     if "\xa0" in author:
@@ -31,21 +33,22 @@ def clean_author_text(author):
     else:
         return(author.strip(trailing_chars))
 
+# Format list of authors into a prose author line
 def get_author_line(authors):
     clean_names = [clean_author_text(author.text) for author in authors]
-    # Capture up fronts or other non-article exceptions
+    # Capture up fronts or other exceptions w/o author lists
     if len(clean_names) == 0: 
         return ""
-    elif len(clean_names) == 1:
+    elif len(clean_names) == 1: # RARE - only one author
         return clean_names[0]
-    # Capture "on behalf of..." or "for..." exceptions
+    # Capture affiliation exceptions like "on behalf of..." or "for..." a group 
     elif re.search(r"(on\s)|(for\s)", clean_names[-1]):
         return ", ".join(clean_names[:-2]) + f" & {clean_names[-2]} {clean_names[-1]}"
     # Connect to last author with and (standard response)
     else:
         return ", ".join(clean_names[:-1]) + f" & {clean_names[-1]}"
 
-# Scrape HTML webpage from springerlink here
+# Scrape HTML webpage from SpringerLink with BeautifulSoup
 def get_website_soup(url, give_main=True):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
@@ -54,13 +57,13 @@ def get_website_soup(url, give_main=True):
         return main
     return soup
 
-# Extract article information from HTML
+# Extract article information from BeautifulSoup parsed HTML
 def extract_article_info(soup):
     # Find article metadata and list of authors
     article_title = soup.find_all("h1", class_="c-article-title")[0].text
     article_info = soup.find_all("li", class_="c-article-identifiers__item") 
     authors = soup.find_all("li", class_="c-article-author-list__item")
-    # Create dictionary containing data
+    # Create dictionary containing article information to put into etoc
     data = {
         "title": article_title,
         "type": article_info[0].text,
@@ -70,6 +73,7 @@ def extract_article_info(soup):
     }
     return data
     
+# Construct an etoc entry for an article and give it as a string
 def get_etoc_entry(article_info): #variant of print_etoc_entry
     article_type = f"\n({article_info["type"]})" if article_info["type"]!="Article" else ""
     entry = f"""
@@ -79,6 +83,7 @@ def get_etoc_entry(article_info): #variant of print_etoc_entry
 {"(Open Access)" if article_info["open-access"] else ""}"""
     return entry
 
+# Search BeautifulSoup parsed HTML for all article links in an issue landing page
 def get_article_links_from_journal_issue(soup):
     links = []
     articles_list = soup.find_all("h3", class_="app-card-open__heading")
@@ -86,6 +91,7 @@ def get_article_links_from_journal_issue(soup):
         links.append(article.find_all("a")[0]["href"])
     return links
 
+# Construct an etoc for a journal issue with etoc entries for every article listed in it 
 def generate_etoc(journal_issue_url):
     check_url(journal_issue_url, target="issue")
     soup = get_website_soup(journal_issue_url)
@@ -100,8 +106,11 @@ def generate_etoc(journal_issue_url):
     return etoc
 
 
+# Command Line Interface (CLI) for regular use
 if __name__=="__main__":
     print(greeting)
+
+    # Loop continuously and enter articles one by one (for weekly ETOCs)
     while True:
         url = str(input("Input page URL here: "))
         if url == "":
@@ -110,7 +119,10 @@ if __name__=="__main__":
         soup = get_website_soup(url)
         article_info = extract_article_info(soup)
         print(get_etoc_entry(article_info))
+
+    # Create an ETOC for a whole issue (for monthly ETOCs)
     journal_issue_url = str(input("Input journal issue URL here: "))
     if journal_issue_url != "":
         print(generate_etoc(journal_issue_url))
+    
     print("\nBye for now!")

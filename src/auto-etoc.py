@@ -76,6 +76,24 @@ def print_etoc_entry(article_info):
     print("\n")
     return 0
 
+def get_etoc_entry(article_info): #variant of print_etoc_entry
+    article_type = f"\n({article_info["type"]})" if article_info["type"]!="Article" else ""
+    entry = f"""
+{article_info["link"]}
+{article_info["title"]}
+{article_info["authors"]}{article_type}
+{"(Open Access)" if article_info["open-access"] else ""}"""
+    # entry = ""
+    # if article_info["link"]:
+    #     entry += article_info["link"] + "\n"
+    # entry += article_info["title"] + "\n"
+    # entry += article_info["authors"] + "\n"
+    # if article_info["type"]!="Article":
+    #     entry += f"({article_info["type"]})\n"
+    # if article_info["open-access"]:
+    #     entry += "(Open Access)\n"
+    return entry
+
 def get_article_links_from_journal_issue(soup):
     links = []
     articles_list = soup.find_all("h3", class_="app-card-open__heading")
@@ -92,7 +110,7 @@ def generate_etoc(journal_issue_url):
         soup = get_website_soup(url)
         article_info = extract_article_info(soup)
         article_info["link"] = url
-        print_etoc_entry(article_info)
+        print(get_etoc_entry(article_info))
     return 0
 
 if __name__=="__main__":
@@ -104,6 +122,8 @@ if __name__=="__main__":
         check_url(url)
         soup = get_website_soup(url)
         article_info = extract_article_info(soup)
-        print_etoc_entry(article_info)
+        print(get_etoc_entry(article_info))
     journal_issue_url = str(input("Input journal issue URL here: "))
-    generate_etoc(journal_issue_url)
+    if journal_issue_url != "":
+        generate_etoc(journal_issue_url)
+    print("\nBye for now!")

@@ -25,10 +25,25 @@ def check_url(url, target="article"):
     pass
 
 def clean_author_text(author):
+    trailing_chars = "0123456789,&" + " "
     if "\xa0" in author:
-        return(author.split("\xa0")[0].strip("0123456789, "))
+        return(author.split("\xa0")[0].strip(trailing_chars))
     else:
-        return(author.strip("0123456789, "))
+        return(author.strip(trailing_chars))
+
+def get_author_line(authors):
+    clean_names = [clean_author_text(author.text) for author in authors]
+    # Capture up fronts or other non-article exceptions
+    if len(clean_names) == 0: 
+        return ""
+    elif len(clean_names) == 1:
+        return clean_names[0]
+    # Capture "on behalf of..." or "for..." exceptions
+    elif re.search(r"(on\s)|(for\s)", clean_names[-1]):
+        return ", ".join(clean_names[:-2]) + f" & {clean_names[-2]} {clean_names[-1]}"
+    # Connect to last author with and (standard response)
+    else:
+        return ", ".join(clean_names[:-1]) + f" & {clean_names[-1]}"
 
 # Scrape HTML webpage from springerlink here
 def get_website_soup(url, give_main=True):
@@ -39,28 +54,22 @@ def get_website_soup(url, give_main=True):
         return main
     return soup
 
-  
 # Extract article information from HTML
 def extract_article_info(soup):
-    data = {}
-    # Find the title
-    data["title"] = soup.find_all("h1", class_="c-article-title")[0].text
-    # Find article type and open access
-    article_info = soup.find_all("li", class_="c-article-identifiers__item")
-    data["type"] = article_info[0].text
-    data["open-access"] = article_info[1].text == '\nOpen access\n'
-    # Cycle through all authors
+    # Find article metadata and list of authors
+    article_title = soup.find_all("h1", class_="c-article-title")[0].text
+    article_info = soup.find_all("li", class_="c-article-identifiers__item") 
     authors = soup.find_all("li", class_="c-article-author-list__item")
-    authors_names = [clean_author_text(author.text) for author in authors]
-
-    # need to do some extra checking here for last item
-    # Note if "on behalf of" or other exceptions
-    # add "&" symbol between last two
-    data["authors"] = ", ".join(authors_names)
-    data["link"] = ""
+    # Create dictionary containing data
+    data = {
+        "title": article_title,
+        "type": article_info[0].text,
+        "open-access": article_info[1].text == '\nOpen access\n',
+        "authors": get_author_line(authors),
+        "link": "" 
+    }
     return data
     
-
 # Print out article information in ETOC format
 def print_etoc_entry(article_info):
     print("\n")

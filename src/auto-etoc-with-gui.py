@@ -72,7 +72,7 @@ def get_etoc_entry(article_info): #variant of print_etoc_entry
 {article_info["link"]}
 {article_info["title"]}
 {article_info["authors"]}{article_type}
-{"(Open Access)" if article_info["open-access"] else ""}"""
+{"(Open Access)" if article_info["open-access"] else ""}\n"""
     return entry
 
 def get_article_links_from_journal_issue(soup):
@@ -83,38 +83,44 @@ def get_article_links_from_journal_issue(soup):
     return links
 
 def generate_etoc(journal_issue_url):
-    check_url(journal_issue_url, target="issue")
-    soup = get_website_soup(journal_issue_url)
-    links = get_article_links_from_journal_issue(soup)
-    etoc = ""
-    for url in links:
-        check_url(url)
-        soup = get_website_soup(url)
-        article_info = extract_article_info(soup)
-        article_info["link"] = url
-        etoc += get_etoc_entry(article_info)
+    try:
+        check_url(journal_issue_url, target="issue")
+        soup = get_website_soup(journal_issue_url)
+        links = get_article_links_from_journal_issue(soup)
+        etoc = ""
+        for url in links:
+            check_url(url)
+            soup = get_website_soup(url)
+            article_info = extract_article_info(soup)
+            article_info["link"] = url
+            etoc += get_etoc_entry(article_info)
+    except ValueError:
+        etoc = "Error generating ETOC: URL does not link to SpringerLink site."
+    except requests.exceptions.MissingSchema:
+        etoc = "Error generating ETOC: URL is invalid."
+    except AttributeError:
+        etoc = "Error generating ETOC: webpage contains no content"
     return etoc
 
 class etocGUI(ttk.Window):
     def __init__(self):
-        super().__init__(themename="journal")  # You can change the theme here
+        super().__init__(themename="journal")
         self.title("eTOC Generator")
         self.geometry("475x360")
 
-        # Entry Field (65 characters wide)
+        # Entry Field
         self.entry = ttk.Entry(self, width=65)
         self.entry.pack(pady=10)
 
         # Generate Button
-        self.generate_button = ttk.Button(self, text="Generate eTOC", command=self.generate_etoc_gui, bootstyle=PRIMARY)
+        self.generate_button = ttk.Button(self, text="Generate Issue eTOC", command=self.generate_etoc_gui, bootstyle=PRIMARY)
         self.generate_button.pack(pady=5)
 
-        # Scrolled Text Output (30 lines, 65 characters)
+        # Scrolled Text Output
         self.output_text = ScrolledText(self, height=15, width=65, wrap='word')
         self.output_text.pack(pady=10, padx=10)
 
     def generate_etoc_gui(self):
-        # Example logic: reverse the string and uppercase it
         input_text = self.entry.get()
         output = f"Generated eTOC:\n{generate_etoc(input_text)}"
         self.output_text.delete("1.0", "end")

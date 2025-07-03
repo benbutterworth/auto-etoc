@@ -80,7 +80,7 @@ def get_etoc_entry(article_info): #variant of print_etoc_entry
 {article_info["link"]}
 {article_info["title"]}
 {article_info["authors"]}{article_type}
-{"(Open Access)" if article_info["open-access"] else ""}"""
+{"(Open Access)\n" if article_info["open-access"] else ""}"""
     return entry
 
 # Search BeautifulSoup parsed HTML for all article links in an issue landing page
@@ -88,7 +88,8 @@ def get_article_links_from_journal_issue(soup):
     links = []
     articles_list = soup.find_all("h3", class_="app-card-open__heading")
     for article in articles_list:
-        links.append(article.find_all("a")[0]["href"])
+        slug = article.find_all("a")[0]["href"]
+        links.append("https://link.springer.com" + slug)
     return links
 
 # Construct an etoc for a journal issue with etoc entries for every article listed in it 

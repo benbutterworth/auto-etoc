@@ -82,12 +82,18 @@ def extract_article_info(soup):
     
 # Construct an etoc entry for an article and give it as a string
 def get_etoc_entry(article_info): #variant of print_etoc_entry
-    article_type = f"\n({article_info["type"]})" if article_info["type"]!="Article" else ""
-    entry = f"""
-{article_info["link"]}
-{article_info["title"]}
-{article_info["authors"]}{article_type}
-{"(Open Access)\n" if article_info["open-access"] else ""}"""
+    isUncommon = article_info["type"] != "Article"
+    isOpenAccess = article_info["open-access"]
+    entry = "{0}\n{1}\n{2}\n{3}\n{4}\n{5}".format(
+        article_info["link"],
+        article_info["title"],
+        article_info["authors"],
+        f"({article_info["type"]})" if isUncommon else "", 
+        "(Open Access)" if isOpenAccess else "",
+        article_info["published"]
+    )
+    # Strip empty lines from common and non OA articles
+    entry = re.sub("\n+", "\n", entry).strip()
     return entry
 
 # Search BeautifulSoup parsed HTML for all article links in an issue landing page
@@ -110,7 +116,7 @@ def generate_etoc(journal_issue_url):
         soup = get_website_soup(url)
         article_info = extract_article_info(soup)
         article_info["link"] = url
-        etoc += get_etoc_entry(article_info)
+        etoc += get_etoc_entry(article_info) + "\n"
     return etoc
 
 
@@ -126,7 +132,8 @@ if __name__=="__main__":
         check_url(url)
         soup = get_website_soup(url)
         article_info = extract_article_info(soup)
-        print(get_etoc_entry(article_info))
+        article_info["link"] = url
+        print("\n", get_etoc_entry(article_info), "\n")
 
     # Create an ETOC for a whole issue (for monthly ETOCs)
     journal_issue_url = str(input("Input journal issue URL here: "))

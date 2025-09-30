@@ -63,11 +63,18 @@ def extract_article_info(soup):
     article_title = soup.find_all("h1", class_="c-article-title")[0].text
     article_info = soup.find_all("li", class_="c-article-identifiers__item") 
     authors = soup.find_all("li", class_="c-article-author-list__item")
+    # Extract published date from open access
+    isOpenAccess = article_info[1].text == '\nOpen access\n'
+    if isOpenAccess:
+        datePublished = article_info[2].text.strip()
+    else:
+        datePublished = article_info[1].text.strip()
     # Create dictionary containing article information to put into etoc
     data = {
         "title": article_title,
         "type": article_info[0].text,
-        "open-access": article_info[1].text == '\nOpen access\n',
+        "open-access": isOpenAccess,
+        "published": datePublished,
         "authors": get_author_line(authors),
         "link": "" 
     }

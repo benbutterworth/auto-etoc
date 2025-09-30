@@ -1,6 +1,8 @@
 # define skullduggery here
 import datetime
 import argparse
+import typer
+from typing_extensions import Annotated
 
 logo = """
    _____     _           _____ _____ _____ _____
@@ -10,43 +12,46 @@ logo = """
   ----your friendly neighbourhood ETOC maker----
 """
 
-parser = argparse.ArgumentParser(
-    prog="autoetoc",
-    formatter_class=argparse.RawDescriptionHelpFormatter,
-    description="%(prog)s scrapes SpringerLink pages for article metadata",
-    epilog=logo
-)
+app = typer.Typer()
 
-# default and neccessary URL argument
-parser.add_argument(
-    "URL", help="URL of the SpringerLink article to scrape"
-)
 
-# use flags to determine how the URL should be interpreted. only one allowed
-group = parser.add_mutually_exclusive_group()
-group.add_argument(
-    "-m", "--monthly", action="store_true",
-    help="scrape all articles in a monthly issue"
-)
-group.add_argument(
-    "-r", "--recent", action="store_true",
-    help="scrape all most recent 'online first' articles"
-)
-group.add_argument(
-    "-s", "--since", action="store",
-    help="scrape all most recent 'online first' articles after the date DD.MM.YY"
-)
+@app.command()
+def article(
+    urls: Annotated[
+        list[str], typer.Argument(help=f"The URL(s) of the article to scrape")
+    ],
+):
+    """Extract the metadata from a single article."""
+    for url in urls:
+        print("Scraping the article at {0}...".format(url))
 
-args = parser.parse_args()
+
+@app.command()
+def issue(url: Annotated[str, typer.Argument(help=f"The URL of the issue to scrape")]):
+    """Extract the metadata from a whole issue's articles."""
+    print("Scraping the issue at {0}...".format(url))
+
+
+@app.command()
+def recent(
+    url: Annotated[
+        str, typer.Argument(help=f"The URL of the 'online first' page to scrape")
+    ],
+):
+    """Extract the metadata from all the most recently published articles."""
+    print("Scraping the most recent articles at {0}...".format(url))
+
+
+@app.command()
+def since(
+    url: Annotated[
+        str, typer.Argument(help=f"The URL of the 'online first' page to scrape")
+    ],
+    date: Annotated[str, typer.Argument(help="The cutoff date (DD.MM.YYYY)")],
+):
+    """Extract the metadata from the most recent articles published since a date."""
+    print("Scraping articles since {1} at {0}...".format(url, date))
+
 
 if __name__ == "__main__":
-    from .scraper import run
-    if args.monthly:
-        pass
-    elif args.recent:
-        pass
-    elif args.since!=None:
-        pass
-    else:
-        return 0
-
+    app()

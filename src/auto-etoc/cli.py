@@ -4,6 +4,8 @@ import argparse
 import typer
 from typing_extensions import Annotated
 
+from . import scraper
+
 logo = """
    _____     _           _____ _____ _____ _____
   |  _  |_ _| |_ ___ ___|   __|_   _|     |     |
@@ -24,12 +26,17 @@ def article(
     """Extract the metadata from a single article."""
     for url in urls:
         print("Scraping the article at {0}...".format(url))
+        scraper.check_url(url)
+        soup = scraper.get_website_soup(url)
+        article_info = scraper.extract_article_info(soup)
+        article_info["link"] = url
+        print("\n", scraper.get_etoc_entry(article_info), "\n")
 
 
 @app.command()
 def issue(url: Annotated[str, typer.Argument(help=f"The URL of the issue to scrape")]):
     """Extract the metadata from a whole issue's articles."""
-    print("Scraping the issue at {0}...".format(url))
+    print(scraper.generate_etoc(url))
 
 
 @app.command()

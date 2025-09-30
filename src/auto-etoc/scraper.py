@@ -135,8 +135,15 @@ def generate_etoc(journal_issue_url: str) -> str:
         etoc += get_etoc_entry(article_info) + "\n"
     return etoc
 
+def scrape(article_url: str) -> str:
+    check_url(url)
+    soup = get_website_soup(url)
+    article_info = extract_article_info(soup)
+    article_info["link"] = url
+    output = "\n" + get_etoc_entry(article_info)+ "\n"
+    return output
 
-# Command Line Interface (CLI) for regular use
+# Interactive script for scraping
 if __name__ == "__main__":
     print(greeting)
 
@@ -145,11 +152,7 @@ if __name__ == "__main__":
         url = str(input("Input page URL here: "))
         if url == "":
             break
-        check_url(url)
-        soup = get_website_soup(url)
-        article_info = extract_article_info(soup)
-        article_info["link"] = url
-        print("\n", get_etoc_entry(article_info), "\n")
+        print(scrape(url))
 
     # Create an ETOC for a whole issue (for monthly ETOCs)
     journal_issue_url = str(input("Input journal issue URL here: "))

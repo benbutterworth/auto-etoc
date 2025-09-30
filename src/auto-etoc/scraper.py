@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import re #proREGEXgang
+import datetime
 
 greeting = """
    _____     _           _____ _____ _____ _____
@@ -66,9 +67,13 @@ def extract_article_info(soup):
     # Extract published date from open access
     isOpenAccess = article_info[1].text == '\nOpen access\n'
     if isOpenAccess:
-        datePublished = article_info[2].text.strip()
+        datePublishedString = article_info[2].text.strip()
     else:
-        datePublished = article_info[1].text.strip()
+        datePublishedString = article_info[1].text.strip()
+    datePublished = datetime.datetime.strptime(
+        datePublishedString.split(": ")[1], 
+        "%d %B %Y"
+    )
     # Create dictionary containing article information to put into etoc
     data = {
         "title": article_title,
@@ -84,13 +89,14 @@ def extract_article_info(soup):
 def get_etoc_entry(article_info): #variant of print_etoc_entry
     isUncommon = article_info["type"] != "Article"
     isOpenAccess = article_info["open-access"]
+    datePublished =  article_info["published"].strftime("%d %B %Y")
     entry = "{0}\n{1}\n{2}\n{3}\n{4}\n{5}".format(
         article_info["link"],
         article_info["title"],
         article_info["authors"],
         f"({article_info["type"]})" if isUncommon else "", 
         "(Open Access)" if isOpenAccess else "",
-        article_info["published"]
+        datePublished
     )
     # Strip empty lines from common and non OA articles
     entry = re.sub("\n+", "\n", entry).strip()

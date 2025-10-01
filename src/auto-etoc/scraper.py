@@ -111,8 +111,8 @@ def get_etoc_entry(article_info: dict) -> str:  # variant of print_etoc_entry
     return entry
 
 
-def get_article_links_from_journal_issue(soup: element.Tag) -> list:
-    """Extract all article links in an issue landing page from an issue url"""
+def get_article_links_from_page(soup: element.Tag) -> list:
+    """Extract all article links in a landing page from an issue or online first url"""
     links = []
     articles_list = soup.find_all("h3", class_="app-card-open__heading")
     for article in articles_list:
@@ -125,7 +125,7 @@ def generate_etoc(journal_issue_url: str) -> str:
     """Construct a monthly etoc for an issue with entries for every article in it"""
     check_url(journal_issue_url, target="issue")
     soup = get_website_soup(journal_issue_url)
-    links = get_article_links_from_journal_issue(soup)
+    links = get_article_links_from_page(soup)
     etoc = ""
     for url in links:
         check_url(url)
@@ -135,7 +135,7 @@ def generate_etoc(journal_issue_url: str) -> str:
         etoc += get_etoc_entry(article_info) + "\n"
     return etoc
 
-def scrape(article_url: str) -> str:
+def scrape(url: str) -> str:
     check_url(url)
     soup = get_website_soup(url)
     article_info = extract_article_info(soup)

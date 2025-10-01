@@ -44,6 +44,12 @@ def recent(
 ):
     """Extract the metadata from all the most recently published articles."""
     print("Scraping the most recent articles at {0}...".format(url))
+    scraper.check_url(url, target="recent")
+    soup = scraper.get_website_soup(url)
+    urls = scraper.get_article_links_from_page(soup)
+    for url in urls:
+        etoc_entry = scraper.scrape(url)
+        print(etoc_entry)
 
 
 @app.command()

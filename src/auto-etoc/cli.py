@@ -60,7 +60,25 @@ def since(
     date: Annotated[str, typer.Argument(help="The cutoff date (DD.MM.YYYY)")],
 ):
     """Extract the metadata from the most recent articles published since a date."""
-    print("Scraping articles since {1} at {0}...".format(url, date))
+    scraper.check_url(url, target="recent")
+    try:
+        datetime.datetime.strptime(date, "%d.%m.%Y")
+    except e:
+        raise Exception("DATE was not valid: use format DD.MM.YYYY")
+    date = datetime.datetime.strptime(date, "%d.%m.%Y")
+    # IN LOOP check date information
+    soup = scraper.get_website_soup(url)
+    etoc_entries = []
+    urls = scraper.get_article_links_from_page(soup)
+    for url in urls:
+        soup = scraper.get_website_soup(url)
+        info = scraper.extract_article_info(soup)
+        if info["published"] > date:
+            etoc_entries.append(scraper.scrape(url))
+        else:
+            continue
+    etoc = "\n".join(etoc_entries)
+    print(etoc)
 
 
 if __name__ == "__main__":

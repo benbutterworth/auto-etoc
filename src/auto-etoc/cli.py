@@ -74,7 +74,9 @@ def since(
         soup = scraper.get_website_soup(url)
         info = scraper.extract_article_info(soup)
         if info["published"] > date:
-            etoc_entries.append(scraper.scrape(url))
+            info["link"] = url
+            entry = scraper.get_etoc_entry(info)
+            etoc_entries.append(entry)
         else:
             continue
     etoc = "\n".join(etoc_entries)

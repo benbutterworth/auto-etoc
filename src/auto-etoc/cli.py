@@ -3,6 +3,8 @@ import datetime
 import argparse
 import typer
 from typing_extensions import Annotated
+from rich import print
+import sys
 
 from . import scraper
 
@@ -63,7 +65,7 @@ def since(
     scraper.check_url(url, target="recent")
     try:
         datetime.datetime.strptime(date, "%d.%m.%Y")
-    except e:
+    except:
         raise Exception("DATE was not valid: use format DD.MM.YYYY")
     date = datetime.datetime.strptime(date, "%d.%m.%Y")
     # IN LOOP check date information
@@ -84,4 +86,6 @@ def since(
 
 
 if __name__ == "__main__":
+    if not sys.stdout.isatty():
+        sys.stdout.reconfigure(encoding="utf-16") # to catch weird letters
     app()

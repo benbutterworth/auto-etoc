@@ -4,18 +4,22 @@ build-backend = "hatchling.build"
 
 [project]
 name = "auto-etoc"
+version = "1.0.0"
 description = "autoetoc scrapes SpringerLink pages for article metadata"
 keywords = []
 authors = [{name = "Ben Butterworth"}]
 requires-python = ">=3.10"
 dependencies = [
-    "reqests>=2.32.3",
-    "beautifulsoup4>=4.13.4",
-    "typer>=0.19.2"
+    "requests",
+    "beautifulsoup4",
+    "typer"
 ]
 readme = { file = "README.md", content-type = "text/markdown"}
 license = "GPL-3.0-or-later"
 urls = { Homepage = "https://github.com/benbutterworth/auto-etoc" }
 
-[tool.hatchling.packages.find]
-packages = ["src/auto-etoc"]
+[project.scripts]
+auto-etoc = "auto_etoc.__main__:CLI"
+
+[tool.hatch.build]
+sources = ["src"]

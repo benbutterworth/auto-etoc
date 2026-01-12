@@ -1,9 +1,11 @@
 # `auto-etoc`
-> Generate an electronic table of contents (etoc) for an issue of an academic journal
+> Command line tool for creating a textual **e**lectronic **t**ables **o**f **c**ontents (etoc) for an issue of an research journal
 
-Journals let their audience know what they've been publishing recently by sending them regular _etocs_, **e**lectronic **t**ables **o**f **c**ontents. These etocs contain short summaries of recent articles. Gathering these summaries, however, is pretty tedious and time consuming; this is where `auto-etoc` comes in.
+Journals let people know what they're publishing by sending them regular *etoc*s of recently published articles. Gathering the short summaries of these articles can be pretty tedious and time consuming; `auto-etoc` reduces the amount of repetetive admin involved.
 
-`auto-etoc` is a webscraper that creates a plaintext summary of every article in an issue of a journal\* containing essential information like its title and authors, what type of article it is, and whether or not it is open access. A summary of an example article is below.
+`auto-etoc` is a command line tool to create a plaintext summary of a research article based on its metadata in a journal\* issue: its title, authors, category and whether or not it is Open Access. It can summarise entire issues, what has been published recently, or individual articles
+
+An example article summary is below.
 
 ```
 https://www.example.com/example-journal-article
@@ -17,47 +19,21 @@ J. Smith, E. Mustermann
 \* `auto-etoc` currently only works with SpringerLink journals. 
 
 # Installation
+It's reccommended you install auto-etoc with `pipx` by running the following command:
 
-> [!IMPORTANT]
-> `auto-etoc` is a Python script, so you must install the Python programming language to use it. Download the latest verison of Python [here](https://www.python.org/downloads/).
-
-1. Download the code in this repository as a .zip file or git clone it onto your system.  
-2. Navigate to the folder with this code and open a terminal window by typing `powershell` in the top navigation bar.
-3. Create and enter a virtual python environment to run `auto-etoc` in with the following commands:
-```
-py -m venv .venv
-.venv/Scripts/activate
-```
-4. Download the required python package dependencies with the command  `py -m pip install -r requirements.txt`.
-5. Exit the virtual environment using `deactivate`.
+`pipx install git+https://github.com/benbutterworth/auto-etoc.git`
 
 # Usage 
+`auto-etoc article $URL$...`  - Extract the metadata from an article, available from the SpringerLink url `$URL$`. Inputting more than one url will output a summary for each of the articles given.
 
-## Interactive Usage (reccommended)
-1. Navigate to the folder `auto-etoc`and open powershell, then re-enter the python virtual environment with `.venv/Scripts/activate`.
-2. Run the CLI script using `python src/scraper.py`
-3. Scrape a single article by pasting its URL into the terminal when asked to and press enter. The etoc entry will be printed to the terminal, where you can copy the text for your etoc. This input process loops until you press enter without giving a URL.
-4. After you press enter without giving a URL, you have the option to scrape a whole journal issue. Give the issue's URL when prompted and an etoc will be generated.
+`auto-etoc issue $URL$`  - Extract the metadata from each article in a specific journal issue, where `$URL$` is the issue to summarise.
 
-## CLI
-> ...*coming soon*...
+`auto-etoc recent $URL$`  - Extract the metadata from the most recently published articles, where `$URL$` is the link to the "online-first" section of a journal. 
 
-# Project Roadmap
+`auto-etoc since $URL$ $DATE$ `  - Extract the metadata from the most recently published articles since `$DATE$`, where `$URL$` is the link to the "online-first" section of a journal.
 
-## Recent Updates
-0. (**DONE**) Fix parsing of author names to account for organisational affiliations.
-1. (**DONE**) Allow user to input journal issue and produce whole etoc, not just one entry.
-2. (**DONE**) Add simple tk GUI with textbox and button.
-3. (**DONE**) Add date published to output data
-4. ~~Add option to export to text instead of to STDOUT~~ *redundant with shell scripting*
-
-## Future Updates
-5. Work into CLI tool instead of text interface
-
-## Stretch Goals
-- Refactor to build GUI application on top of core library instead of as separate file.
-- Rewrite for distribution as single executable.
-- Widen scope to other scrape issues from other publishers than SpringerNature
+>[!TIP]
+> `auto-etoc` works best in scripting automations where the outputs can be piped to textfiles.
 
 # Credit
-*Ben Butterworth, 2025*
+*Ben Butterworth, 2026*

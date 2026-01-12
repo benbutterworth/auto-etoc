@@ -32,15 +32,13 @@ py -m venv .venv
 5. Exit the virtual environment using `deactivate`.
 
 # Usage 
+`auto-etoc article ARTICLE_URL...   `  - Extract the metadata from one or more articles.
 
-## Interactive Usage (reccommended)
-1. Navigate to the folder `auto-etoc`and open powershell, then re-enter the python virtual environment with `.venv/Scripts/activate`.
-2. Run the CLI script using `python src/scraper.py`
-3. Scrape a single article by pasting its URL into the terminal when asked to and press enter. The etoc entry will be printed to the terminal, where you can copy the text for your etoc. This input process loops until you press enter without giving a URL.
-4. After you press enter without giving a URL, you have the option to scrape a whole journal issue. Give the issue's URL when prompted and an etoc will be generated.
+`auto-etoc issue ISSUE_URL      `  - Extract the metadata from a specific issue's articles
 
-## CLI
-> ...*coming soon*...
+`auto-etoc recent ONLINE_FIRST_URL      `  - Extract the metadata from all the most recently published articles.
+
+`auto-etoc since ONLINE_FIRST_URL DATE `  - Extract the metadata from the most recent articles published since `DATE`.
 
 # Project Roadmap
 
@@ -50,9 +48,8 @@ py -m venv .venv
 2. (**DONE**) Add simple tk GUI with textbox and button.
 3. (**DONE**) Add date published to output data
 4. ~~Add option to export to text instead of to STDOUT~~ *redundant with shell scripting*
+5. (**DONE**) Work into CLI tool instead of text interface
 
-## Future Updates
-5. Work into CLI tool instead of text interface
 
 ## Stretch Goals
 - Refactor to build GUI application on top of core library instead of as separate file.
@@ -60,4 +57,4 @@ py -m venv .venv
 - Widen scope to other scrape issues from other publishers than SpringerNature
 
 # Credit
-*Ben Butterworth, 2025*
+*Ben Butterworth, 2026*

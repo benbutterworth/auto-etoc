@@ -1,20 +1,12 @@
 # define skullduggery here
 import datetime
-import argparse
-import typer
-from typing_extensions import Annotated
-from rich import print
 import sys
 
-from . import scraper
+import typer
+from rich import print
+from typing_extensions import Annotated
 
-logo = """
-   _____     _           _____ _____ _____ _____
-  |  _  |_ _| |_ ___ ___|   __|_   _|     |     |
-  |     | | |  _| . |___|   __| | | |  |  |  ---|
-  |__|__|___|_| |___|   |_____| |_| |_____|_____|   
-  ----your friendly neighbourhood ETOC maker----
-"""
+from . import scraper
 
 app = typer.Typer()
 
@@ -22,7 +14,7 @@ app = typer.Typer()
 @app.command()
 def article(
     urls: Annotated[
-        list[str], typer.Argument(help=f"The URL(s) of the article to scrape")
+        list[str], typer.Argument(help="The URL(s) of the article to scrape")
     ],
 ):
     """Extract the metadata from a single article."""
@@ -32,7 +24,7 @@ def article(
 
 
 @app.command()
-def issue(url: Annotated[str, typer.Argument(help=f"The URL of the issue to scrape")]):
+def issue(url: Annotated[str, typer.Argument(help="The URL of the issue to scrape")]):
     """Extract the metadata from a whole issue's articles."""
     etoc_entries = scraper.generate_etoc(url)
     print(etoc_entries)
@@ -41,7 +33,7 @@ def issue(url: Annotated[str, typer.Argument(help=f"The URL of the issue to scra
 @app.command()
 def recent(
     url: Annotated[
-        str, typer.Argument(help=f"The URL of the 'online first' page to scrape")
+        str, typer.Argument(help="The URL of the 'online first' page to scrape")
     ],
 ):
     """Extract the metadata from all the most recently published articles."""
@@ -57,25 +49,24 @@ def recent(
 @app.command()
 def since(
     url: Annotated[
-        str, typer.Argument(help=f"The URL of the 'online first' page to scrape")
+        str, typer.Argument(help="The URL of the 'online first' page to scrape")
     ],
     date: Annotated[str, typer.Argument(help="The cutoff date (DD.MM.YYYY)")],
 ):
     """Extract the metadata from the most recent articles published since a date."""
     scraper.check_url(url, target="recent")
     try:
-        datetime.datetime.strptime(date, "%d.%m.%Y")
-    except:
-        raise Exception("DATE was not valid: use format DD.MM.YYYY")
-    date = datetime.datetime.strptime(date, "%d.%m.%Y")
-    # IN LOOP check date information
+        comparisondate = datetime.datetime.strptime(date, "%d.%m.%Y")
+    except ValueError:
+        # if you can't parse the date, default to one week ago
+        comparisondate = datetime.datetime.now() - datetime.timedelta(weeks=1)
     soup = scraper.get_website_soup(url)
     etoc_entries = []
     urls = scraper.get_article_links_from_page(soup)
     for url in urls:
         soup = scraper.get_website_soup(url)
         info = scraper.extract_article_info(soup)
-        if info["published"] > date:
+        if info["published"] > comparisondate:
             info["link"] = url
             entry = scraper.get_etoc_entry(info)
             etoc_entries.append(entry)

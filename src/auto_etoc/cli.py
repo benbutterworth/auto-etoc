@@ -1,7 +1,10 @@
 # define skullduggery here
 import datetime
+import logging
 import sys
+from pathlib import Path
 
+import platformdirs
 import typer
 from rich import print
 from typing_extensions import Annotated
@@ -9,6 +12,24 @@ from typing_extensions import Annotated
 from . import scraper
 
 app = typer.Typer()
+
+
+@app.callback()
+def main(verbose: bool = typer.Option(False, "--verbose", "-v")):
+    # create a logging directory and file if one doesn't exist
+    log_dir = Path(platformdirs.user_log_dir("autoetoc"))
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_file = log_dir / "autoetoc.log"
+
+    level = logging.DEBUG if verbose else logging.WARNING
+
+    logging.basicConfig(
+        filename=log_file,
+        format="%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s",
+        datefmt="%d-%m-%Y %H:%M:%S",
+        encoding="utf-8",
+        level=level,
+    )
 
 
 @app.command()

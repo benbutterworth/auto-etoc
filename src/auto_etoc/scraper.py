@@ -114,9 +114,12 @@ def get_etoc_entry(article_info: dict) -> str:  # variant of print_etoc_entry
 def get_article_links_from_page(soup: element.Tag) -> list:
     """Extract all article links in a landing page from an issue or online first url"""
     links = []
-    articles_list = soup.find_all("h3", class_="app-card-open__heading")
+    articles_list = soup.find_all("h2", class_="app-card-open__heading")
     for article in articles_list:
-        slug = article.find_all("a")[0]["href"]
+        anchor = article.find("a", attrs={"data-track": True})
+        if anchor is None:
+            continue
+        slug = anchor.get("href", "").strip()
         links.append("https://link.springer.com" + slug)
     return links
 

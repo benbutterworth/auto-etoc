@@ -99,5 +99,5 @@ def since(
 
 if __name__ == "__main__":
     if not sys.stdout.isatty():
-        sys.stdout.reconfigure(encoding="utf-16") # to catch weird letters
+        sys.stdout.reconfigure(encoding="utf-8")  # to catch weird letters
     app()

@@ -1,14 +1,17 @@
-import requests
-from bs4 import BeautifulSoup
-from bs4 import element
-import re  # proREGEXgang
 import datetime
+import logging
+import re  # proREGEXgang
+
+import requests
+from bs4 import BeautifulSoup, element
+
+logger = logging.getLogger(__name__)
 
 greeting = """
    _____     _           _____ _____ _____ _____
   |  _  |_ _| |_ ___ ___|   __|_   _|     |     |
   |     | | |  _| . |___|   __| | | |  |  |  ---|
-  |__|__|___|_| |___|   |_____| |_| |_____|_____|   
+  |__|__|___|_| |___|   |_____| |_| |_____|_____|
   ----your friendly neighbourhood ETOC maker----
 
 """
@@ -24,9 +27,13 @@ def check_url(url: str, target="article") -> None:
     elif target == "recent":
         regex += r"\/journal\/125\/online-first"
     else:
+        logger.warning(
+            "target format (%s) isn't known; can't check url (%s)", target, url
+        )
         raise TypeError("Invalid target - please specify what the source should be")
     # Check that url matches these formats
     if not re.search(regex, url):
+        logger.warning("url (%s) doesn't match target format (%s)", url, target)
         raise ValueError("URL does not point to valid source of etoc information.")
     pass
 
@@ -58,10 +65,14 @@ def get_author_line(authors: element.Tag) -> str:
 
 def get_website_soup(url: str, give_main=True) -> element.Tag:
     """Scrape the contents of a HTML webpage at `url`"""
+    logger.debug("requesting %s...", url)
     page = requests.get(url)
+    logger.debug("requested %s with status code %d", url, page.status_code)
     soup = BeautifulSoup(page.content, "html.parser")
     if give_main:
+        logger.debug("finding main within soup...")
         main = soup.find(id="main")
+        logger.debug("found main")
         return main
     return soup
 
@@ -70,8 +81,12 @@ def extract_article_info(soup: element.Tag) -> dict:
     """Extract article information from its scraped soup"""
     # Find article metadata and list of authors
     article_title = soup.find_all("h1", class_="c-article-title")[0].text
+    logger.debug("extracted titles from %s", soup.name)
     article_info = soup.find_all("li", class_="c-article-identifiers__item")
+    logger.debug("extracted article info from %s", soup.name)
     authors = soup.find_all("li", class_="c-article-author-list__item")
+    logger.debug("extracted authors from %s", soup.name)
+
     # Extract published date from open access
     isOpenAccess = article_info[1].text == "\nOpen access\n"
     if isOpenAccess:
@@ -102,7 +117,7 @@ def get_etoc_entry(article_info: dict) -> str:  # variant of print_etoc_entry
         article_info["link"],
         article_info["title"],
         article_info["authors"],
-        f"({article_info["type"]})" if isUncommon else "",
+        f"({article_info['type']})" if isUncommon else "",
         "(Open Access)" if isOpenAccess else "",
         datePublished,
     )
@@ -115,12 +130,17 @@ def get_article_links_from_page(soup: element.Tag) -> list:
     """Extract all article links in a landing page from an issue or online first url"""
     links = []
     articles_list = soup.find_all("h2", class_="app-card-open__heading")
+    logger.debug("found %d articles in page %s", len(articles_list), soup.name)
     for article in articles_list:
         anchor = article.find("a", attrs={"data-track": True})
         if anchor is None:
+            logger.warning(
+                "could not find hyperlink within article", article.contents[:35]
+            )
             continue
         slug = anchor.get("href", "").strip()
         links.append("https://link.springer.com" + slug)
+    logger.debug("extracted %d articles from page %s", len(links), soup.name)
     return links
 
 
@@ -129,6 +149,10 @@ def generate_etoc(journal_issue_url: str) -> str:
     check_url(journal_issue_url, target="issue")
     soup = get_website_soup(journal_issue_url)
     links = get_article_links_from_page(soup)
+    if links == []:
+        logger.warning(
+            "couldn't extract any hyperlinks from the page ", journal_issue_url
+        )
     etoc = ""
     for url in links:
         check_url(url)
@@ -138,13 +162,15 @@ def generate_etoc(journal_issue_url: str) -> str:
         etoc += get_etoc_entry(article_info) + "\n"
     return etoc
 
+
 def scrape(url: str) -> str:
     check_url(url)
     soup = get_website_soup(url)
     article_info = extract_article_info(soup)
     article_info["link"] = url
-    output = "\n" + get_etoc_entry(article_info)+ "\n"
+    output = "\n" + get_etoc_entry(article_info) + "\n"
     return output
+
 
 # Interactive script for scraping
 if __name__ == "__main__":

@@ -23,9 +23,9 @@ def check_url(url: str, target="article") -> None:
     if target == "article":
         regex += r"\/article\/10\.1007"
     elif target == "issue":
-        regex += r"\/journal\/125\/volumes-and-issues"
+        regex += r"\/journal\/\d+\/volumes-and-issues"
     elif target == "recent":
-        regex += r"\/journal\/125\/online-first"
+        regex += r"\/journal\/\d+\/online-first"
     else:
         logger.warning(
             "target format (%s) isn't known; can't check url (%s)", target, url

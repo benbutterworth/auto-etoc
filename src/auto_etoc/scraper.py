@@ -93,13 +93,22 @@ def extract_article_info(soup: element.Tag) -> dict:
         datePublishedString = article_info[2].text.strip()
     else:
         datePublishedString = article_info[1].text.strip()
+
+    article_type = article_info[0].text
+
+    # Account for UpFronts
+    if article_title == "Up Front":
+        datePublishedString = article_info[0].text.strip()
+        article_type = "Up Front"
+
     datePublished = datetime.datetime.strptime(
         datePublishedString.split(": ")[1], "%d %B %Y"
     )
+
     # Create dictionary containing article information to put into etoc
     data = {
         "title": article_title,
-        "type": article_info[0].text,
+        "type": article_type,
         "open-access": isOpenAccess,
         "published": datePublished,
         "authors": get_author_line(authors),

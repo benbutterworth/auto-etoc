@@ -97,9 +97,9 @@ def extract_article_info(soup: element.Tag) -> dict:
     article_type = article_info[0].text
 
     # Account for UpFronts
-    if article_title == "Up Front":
-        datePublishedString = article_info[0].text.strip()
-        article_type = "Up Front"
+    # if article_title == "Up Front":
+    #     datePublishedString = article_info[0].text.strip()
+    #     article_type = "Up Front"
 
     datePublished = datetime.datetime.strptime(
         datePublishedString.split(": ")[1], "%d %B %Y"
@@ -122,7 +122,7 @@ def get_etoc_entry(article_info: dict) -> str:  # variant of print_etoc_entry
     isUncommon = article_info["type"] != "Article"
     isOpenAccess = article_info["open-access"]
     datePublished = article_info["published"].strftime("%d %B %Y")
-    entry = "{0}\n{1}\n{2}\n{3}\n{4}\n{5}".format(
+    entry = "{}\n{}\n{}\n{}\n{}\n{}".format(
         article_info["link"],
         article_info["title"],
         article_info["authors"],
